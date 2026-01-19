@@ -9,8 +9,15 @@ display_surface = pygame.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT))
 pygame.display.set_caption("Space Shooter")
 running = True
 
-# surface
-ground_surf = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT/4))
+# meteor
+meteor_path = join("images","meteor.png")
+meteor_surf = pygame.image.load(meteor_path).convert_alpha()
+meteor_rect = meteor_surf.get_rect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
+
+# laser
+laser_path = join("images", "laser.png")
+laser_surf = pygame.image.load(laser_path).convert_alpha()
+laser_rect = laser_surf.get_rect(bottomleft = (20, WINDOW_HEIGHT-20))
 
 # importing star image
 star_path = join("images", "star.png")
@@ -18,9 +25,10 @@ star_surf = pygame.image.load(star_path).convert_alpha()
 star_positions = [(randint(0,WINDOW_WIDTH),randint(0, WINDOW_HEIGHT)) for i in range(20)]
 
 # importing image
-x, y = 100, 200
 player_path = join("images","player.png")
 player_surf = pygame.image.load(player_path).convert_alpha()
+player_rect = player_surf.get_rect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
+player_dirx = 100
 
 while running:
     # event loop
@@ -29,12 +37,24 @@ while running:
             running = False
 
     # draw the game
-    x += .1
     display_surface.fill('darkgrey')
-    display_surface.blit(ground_surf, (0, WINDOW_HEIGHT-(WINDOW_HEIGHT/4)))
     for pos in star_positions:
         display_surface.blit(star_surf,(pos))
-    display_surface.blit(player_surf, (x, y))
+    display_surface.blit(meteor_surf, meteor_rect)
+    display_surface.blit(laser_surf, laser_rect)
+
+    # player movement
+    if player_dirx > 0:
+        if player_rect.right < WINDOW_WIDTH:
+            player_rect.centerx += player_dirx
+        else: 
+            player_dirx = abs(player_dirx) * -1
+    elif player_rect.left > 0:
+        player_rect.centerx += player_dirx
+    else:
+        player_dirx = abs(player_dirx)
+
+    display_surface.blit(player_surf, player_rect)
     
     pygame.display.update()
 
