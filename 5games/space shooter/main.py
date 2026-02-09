@@ -75,6 +75,21 @@ class Meteor(pygame.sprite.Sprite):
         if self.rect.top > WINDOW_HEIGHT:
              self.kill()
 
+class AnimatedExplosion(pygame.sprite.Sprite):
+    def __init__(self, frames, pos, groups):
+        super().__init__(groups)
+        self.frame = 0
+        self.frame_images = frames
+        self.animation_speed = 80
+        self.image = self.frame_images[self.frame]
+        self.rect = self.image.get_frect(center = pos)
+    def update(self, dt):
+        self.frame += self.animation_speed * dt
+        if self.frame <= len(self.frame_images):
+            self.image = self.frame_images[int(self.frame) % len(self.frame_images)]
+        else:
+            self.kill()
+
 def collisions():
     global running
 
@@ -86,6 +101,7 @@ def collisions():
         collided_sprites = pygame.sprite.spritecollide(laser, meteor_sprites, True)
         if collided_sprites:
             laser.kill()
+            AnimatedExplosion(explosion_frames, laser.rect.midtop, all_sprites)
 
 def display_score():
     current_time = pygame.time.get_ticks()
@@ -108,6 +124,7 @@ meteor_surf = pygame.image.load(join("images","meteor.png")).convert_alpha()
 laser_surf = pygame.image.load(join("images", "laser.png")).convert_alpha()
 star_surf = pygame.image.load(join("images", "star.png")).convert_alpha()
 font = pygame.font.Font(None, 50)
+explosion_frames = [pygame.image.load(join("images","explosion",f"{i}.png")).convert_alpha() for i in range(21)]
 
 # sprites
 all_sprites = pygame.sprite.Group()
