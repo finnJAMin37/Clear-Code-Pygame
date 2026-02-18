@@ -32,8 +32,9 @@ class Player(pygame.sprite.Sprite):
             Laser(laser_surf, self.rect.midtop, (all_sprites, laser_sprites))
             self.can_shoot = False
             self.laser_shoot_time = pygame.time.get_ticks()
+            laser_sound.play()
         self.dir = self.dir.normalize() if self.dir else self.dir
-        self.rect.center += self.dir * 300 * dt
+        self.rect.center += self.dir * self.speed * dt
         self.laser_timer()
 
 class Star(pygame.sprite.Sprite):
@@ -69,7 +70,7 @@ class Meteor(pygame.sprite.Sprite):
         self.rect.center += self.direction * self.meteor_speed * dt
         self.rotation += self.rotation_speed*dt
         self.image = pygame.transform.rotozoom(self.original_surf, self.rotation, 1)
-        self.rect = self.image.get_frect(center=  self.rect.center)
+        self.rect = self.image.get_frect(center = self.rect.center)
         # if pygame.time.get_ticks() - self.star_time > self.life_time:
         #     self.kill()
         if self.rect.top > WINDOW_HEIGHT:
@@ -125,6 +126,9 @@ laser_surf = pygame.image.load(join("images", "laser.png")).convert_alpha()
 star_surf = pygame.image.load(join("images", "star.png")).convert_alpha()
 font = pygame.font.Font(None, 50)
 explosion_frames = [pygame.image.load(join("images","explosion",f"{i}.png")).convert_alpha() for i in range(21)]
+# sounds
+laser_sound = pygame.mixer.Sound(file=join("audio", "laser.wav"))
+laser_sound.set_volume(.1)
 
 # sprites
 all_sprites = pygame.sprite.Group()
