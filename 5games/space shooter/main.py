@@ -9,11 +9,10 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(center = (WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
         self.dir = pygame.math.Vector2(0, 0)
         self.speed: int = 300
-
         # cooldown
         self.can_shoot = True
         self.laser_shoot_time = 0
-        self.cooldown_duration = 400
+        self.cooldown_duration = 100
 
         # # mask
         # self.mask = pygame.mask.from_surface(self.image)
@@ -24,6 +23,8 @@ class Player(pygame.sprite.Sprite):
             if current_time - self.laser_shoot_time >= self.cooldown_duration:
                 self.can_shoot = True
     def update(self, dt):
+        self.speed_ramp = pygame.time.get_ticks() // 2000
+        self.new_speed = self.speed_ramp + self.speed
         keys = pygame.key.get_pressed()
         self.dir.x = int(keys[pygame.K_RIGHT] - keys[pygame.K_LEFT])
         self.dir.y = int(keys[pygame.K_DOWN] - keys[pygame.K_UP])
@@ -34,7 +35,7 @@ class Player(pygame.sprite.Sprite):
             self.laser_shoot_time = pygame.time.get_ticks()
             laser_sound.play()
         self.dir = self.dir.normalize() if self.dir else self.dir
-        self.rect.center += self.dir * self.speed * dt
+        self.rect.center += self.dir * self.new_speed * dt
         self.laser_timer()
 
 class Star(pygame.sprite.Sprite):
@@ -79,6 +80,7 @@ class Meteor(pygame.sprite.Sprite):
 class AnimatedExplosion(pygame.sprite.Sprite):
     def __init__(self, frames, pos, groups):
         super().__init__(groups)
+        explosion_sound.play()
         self.frame = 0
         self.frame_images = frames
         self.animation_speed = 80
@@ -129,6 +131,11 @@ explosion_frames = [pygame.image.load(join("images","explosion",f"{i}.png")).con
 # sounds
 laser_sound = pygame.mixer.Sound(file=join("audio", "laser.wav"))
 laser_sound.set_volume(.1)
+explosion_sound = pygame.mixer.Sound(join("audio","explosion.wav"))
+explosion_sound.set_volume(.1)
+game_music = pygame.mixer.Sound(join("audio","game_music.wav"))
+game_music.set_volume(.4)
+game_music.play(loops=-1)
 
 # sprites
 all_sprites = pygame.sprite.Group()
@@ -143,6 +150,7 @@ meteor_event = pygame.event.custom_type()
 pygame.time.set_timer(meteor_event, 2000)
 
 while running:
+    current_time = pygame.time.get_ticks() // 2000
     dt = clock.tick(60) / 1000
     # event loop
     for event in pygame.event.get():
@@ -150,6 +158,7 @@ while running:
             running = False
         if event.type == meteor_event:
             Meteor(meteor_surf, (all_sprites, meteor_sprites))
+            pygame.time.set_timer(meteor_event, 2000//current_time)
 
     all_sprites.update(dt)
     # collisions
